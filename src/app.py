@@ -542,6 +542,7 @@ with overview_tab:
         "The same pressure formula is rolled up geographically. Bubble size represents pressure; hover to reveal each region's dominant failure theme."
     )
     regional = regional_hotspots(filtered)
+    region_view_key = "-".join(sorted(regional["region"].tolist()))
     map_col, region_col = st.columns([1.45, 0.75])
     with map_col:
         region_layer = pdk.Layer(
@@ -573,7 +574,12 @@ with overview_tab:
                 "style": {"backgroundColor": "#121620", "color": "#F6F7FB"},
             },
         )
-        st.pydeck_chart(region_deck, use_container_width=True, height=390)
+        st.pydeck_chart(
+            region_deck,
+            use_container_width=True,
+            height=390,
+            key=f"regional-map-{region_view_key}",
+        )
 
     with region_col:
         hotspot = regional.iloc[0]
@@ -592,6 +598,7 @@ with overview_tab:
             regional_table,
             hide_index=True,
             use_container_width=True,
+            key=f"regional-table-{region_view_key}",
             column_config={
                 "Pressure": st.column_config.ProgressColumn(
                     "Pressure",
