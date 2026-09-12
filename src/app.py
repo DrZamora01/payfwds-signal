@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime, timedelta
 from html import escape
 from pathlib import Path
@@ -9,6 +10,12 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
+from gemini_intelligence import (
+    MODEL_NAME,
+    build_evidence_payload,
+    fallback_brief,
+    generate_gemini_brief,
+)
 from pipeline import Review, classify_many, recency_weight, safe_quote, switching_pressure_score
 
 DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "sample_reviews.csv"
@@ -24,7 +31,7 @@ BORDER = "#283142"
 DANGER = "#FF6B6B"
 
 st.set_page_config(
-    page_title="PayFwds Signal",
+    page_title="Signal | PayFwds",
     page_icon="📡",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -56,6 +63,12 @@ st.markdown(
         display:inline-block; margin:.75rem .45rem 0 0; padding:.38rem .62rem;
         border:1px solid #354157; border-radius:999px; color:#DCE2EF; font-size:.78rem; background:rgba(14,18,26,.55);
       }}
+      .live-badge {{
+        display:inline-flex; align-items:center; gap:.42rem; margin-top:.8rem; padding:.45rem .7rem;
+        border:1px solid rgba(183,227,61,.38); border-radius:999px; color:{BRAND_LIME};
+        background:rgba(183,227,61,.08); font-size:.76rem; font-weight:800; letter-spacing:.04em;
+      }}
+      .live-dot {{ width:7px; height:7px; border-radius:50%; background:{BRAND_LIME}; box-shadow:0 0 12px {BRAND_LIME}; }}
       .metric-card {{
         min-height: 142px; border:1px solid {BORDER}; border-radius:18px; padding:1rem 1.05rem;
         background: linear-gradient(180deg, {PANEL_2}, {PANEL});
@@ -76,6 +89,17 @@ st.markdown(
       .demo-title {{ font-weight:800; margin:.28rem 0; }}
       .demo-copy {{ color:{MUTED}; font-size:.85rem; line-height:1.35; }}
       .battle-title {{ color:{BRAND_LIME}; font-size:.8rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }}
+      .brief-hero {{
+        border:1px solid rgba(183,227,61,.3); border-radius:18px; padding:1.25rem 1.35rem;
+        background:linear-gradient(135deg,rgba(59,42,112,.42),rgba(18,22,32,.96));
+        margin:.8rem 0 1rem;
+      }}
+      .brief-kicker {{ color:{BRAND_LIME}; font-size:.7rem; letter-spacing:.14em; font-weight:850; }}
+      .brief-headline {{ color:{TEXT}; font-size:1.6rem; line-height:1.15; font-weight:850; margin:.35rem 0; }}
+      .brief-copy {{ color:#D7DCE7; line-height:1.55; }}
+      .proof-row {{ border-bottom:1px solid {BORDER}; padding:.68rem 0; color:#E9ECF3; }}
+      .proof-row:last-child {{ border-bottom:0; }}
+      .eyebrow {{ color:{MUTED}; font-size:.72rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }}
       .small-muted {{ color:{MUTED}; font-size:.82rem; }}
       div[data-testid="stDataFrame"] {{ border:1px solid {BORDER}; border-radius:14px; overflow:hidden; }}
       div[data-testid="stMetric"] {{ border:1px solid {BORDER}; padding:.75rem; border-radius:14px; background:{PANEL}; }}
@@ -95,6 +119,15 @@ st.markdown(
 
 def theme_label(value: str) -> str:
     return value.replace("_", " ").title()
+
+
+def configured_gemini_key() -> str:
+    if os.getenv("GEMINI_API_KEY"):
+        return os.environ["GEMINI_API_KEY"]
+    try:
+        return str(st.secrets.get("GEMINI_API_KEY", ""))
+    except Exception:
+        return ""
 
 
 @st.cache_data
@@ -276,7 +309,7 @@ DISCOVERY_QUESTIONS = {
 }
 
 
-def battlecard_markdown(provider: str, frame: pd.DataFrame, summary: pd.DataFrame) -> str:
+def battlecard_markdown(provider: str, frame: pd.DataFrame, summary: pd.DataFrame, brief=None) -> str:
     p_summary = summary[summary["provider"] == provider].sort_values("switching_pressure", ascending=False)
     p_reviews = frame[frame["provider"] == provider].sort_values(["severity", "review_date"], ascending=False)
     top_themes = p_summary.head(2)["theme"].tolist()
@@ -290,6 +323,22 @@ def battlecard_markdown(provider: str, frame: pd.DataFrame, summary: pd.DataFram
     quotes = [safe_quote(x, 180) for x in p_reviews["text"].head(3).tolist()]
     evidence = "\n".join([f"- \"{q}\"" for q in quotes]) or "- No matching review excerpts."
     theme_line = ", ".join(top_themes)
+    ai_section = ""
+    if brief is not None:
+        ai_section = dedent(
+            f"""
+            ## Call point of view
+            **{brief.headline}**
+
+            {brief.executive_summary}
+
+            **Open with:** {brief.opening_question}
+
+            **Recommended next step:** {brief.recommended_next_step}
+
+            **Guardrail:** {brief.watch_out}
+            """
+        ).strip()
 
     return dedent(
         f"""
@@ -297,6 +346,8 @@ def battlecard_markdown(provider: str, frame: pd.DataFrame, summary: pd.DataFram
 
         ## Competitive signal
         The strongest public-review pressure themes in the current view are **{theme_line}**.
+
+        {ai_section}
 
         ## Discovery angle
         Do not attack the competitor. Use the themes to ask whether the prospect experiences the same operational friction, then validate whether PayFwds can demonstrate a better workflow before making a claim.
@@ -328,29 +379,43 @@ if df.empty:
 st.markdown(
     """
     <div class="signal-hero">
-      <div class="signal-kicker">PAYFWDS // COMPETITIVE INTELLIGENCE</div>
-      <div class="signal-title">Signal</div>
-      <div class="signal-sub">Turn public payroll complaints into a five-minute pre-call brief: where competitors fail, who feels the pain, and which issue creates the strongest switching pressure.</div>
-      <span class="signal-chip">Aggregated public reviews</span>
-      <span class="signal-chip">Explainable scoring</span>
-      <span class="signal-chip">Sales battlecards</span>
-      <span class="signal-chip">No reviewer de-anonymization</span>
+      <div class="signal-kicker">PAYFWDS SIGNAL // THE PROOF BEFORE THE PITCH</div>
+      <div class="signal-title">Know the risk.<br><span class="accent">Earn the call.</span></div>
+      <div class="signal-sub">Signal turns thousands of payroll complaints into one credible pre-call advantage: where a provider breaks down, which teams feel it most, and the questions that uncover a reason to switch.</div>
+      <span class="signal-chip">Market pressure map</span>
+      <span class="signal-chip">Segment-level evidence</span>
+      <span class="signal-chip">AI call briefs</span>
+      <span class="signal-chip">Privacy by design</span><br>
+      <span class="live-badge"><span class="live-dot"></span> GEMINI-POWERED SALES INTELLIGENCE</span>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
 with st.sidebar:
-    st.markdown("### Signal controls")
-    st.caption("Narrow the market view. Every tab updates together.")
+    st.markdown("### Build the signal")
+    st.caption("Define the market slice. Every insight and call brief updates together.")
     providers = st.multiselect("Provider", sorted(df.provider.unique()), default=sorted(df.provider.unique()))
     categories = st.multiselect("Failure category", sorted(df.theme.unique()), default=sorted(df.theme.unique()))
     sizes = st.multiselect("Company size", sorted(df.company_size.dropna().unique()), default=sorted(df.company_size.dropna().unique()))
     industries = st.multiselect("Industry", sorted(df.industry.dropna().unique()), default=sorted(df.industry.dropna().unique()))
     regions = st.multiselect("Region", sorted(df.region.dropna().unique()), default=sorted(df.region.dropna().unique()))
     st.divider()
+    st.markdown("**Gemini copilot**")
+    saved_gemini_key = configured_gemini_key()
+    if saved_gemini_key:
+        gemini_api_key = saved_gemini_key
+        st.success(f"Connected · {MODEL_NAME}")
+    else:
+        gemini_api_key = st.text_input(
+            "Gemini API key",
+            type="password",
+            help="Used only for this session. Set GEMINI_API_KEY in the environment for deployment.",
+        )
+        st.caption("Add a key for live AI briefs. Without one, Signal shows a deterministic grounded preview.")
+    st.divider()
     st.markdown("**Demo data status**")
-    st.caption("This starter build uses synthetic sample reviews so the product can be demonstrated safely. Replace them with a permitted API or published dataset before a real competitive analysis.")
+    st.caption("Synthetic, clearly labeled review data keeps the demo safe and repeatable. Production ingestion is limited to permitted APIs and published datasets.")
 
 filtered = df[
     df.provider.isin(providers)
@@ -411,19 +476,19 @@ with st.expander("▶ 5-minute judge demo path", expanded=False):
     with d2:
         st.markdown('<div class="demo-step"><div class="demo-num">STEP 02</div><div class="demo-title">Explain who feels it</div><div class="demo-copy">Open Provider Intel. Drill into industry, company size, severity, trend, and representative reviews.</div></div>', unsafe_allow_html=True)
     with d3:
-        st.markdown('<div class="demo-step"><div class="demo-num">STEP 03</div><div class="demo-title">Turn insight into action</div><div class="demo-copy">Open Battlecards. Generate discovery questions and an evidence-backed pre-call brief a rep can download.</div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="demo-step"><div class="demo-num">STEP 03</div><div class="demo-title">Earn the next conversation</div><div class="demo-copy">Open AI Call Brief. Let Gemini turn the evidence into a grounded opening, discovery path, and next step.</div></div>', unsafe_allow_html=True)
 
 # -----------------------------
 # Tabs
 # -----------------------------
 
 overview_tab, provider_tab, battle_tab, methodology_tab = st.tabs(
-    ["Overview", "Provider Intel", "Battlecards", "Methodology"]
+    ["01 · Market map", "02 · Provider dossier", "03 · AI call brief", "04 · Trust & method"]
 )
 
 with overview_tab:
-    st.markdown("### Market pressure map")
-    st.caption("A high score means the complaint pattern is more frequent, more severe, and more recent within the current filtered view.")
+    st.markdown("### See the market break before the prospect says it")
+    st.caption("Higher pressure means a complaint pattern is more frequent, more severe, and more recent in the selected evidence.")
 
     left, right = st.columns([1.05, 1])
     with left:
@@ -513,7 +578,7 @@ with overview_tab:
     )
 
 with provider_tab:
-    st.markdown("### Provider intelligence")
+    st.markdown("### Build a provider point of view")
     selected_provider = st.selectbox("Choose a provider", sorted(filtered.provider.unique()), key="provider_intel")
     p_reviews = filtered[filtered.provider == selected_provider].copy()
     p_summary = summary[summary.provider == selected_provider].sort_values("switching_pressure", ascending=False)
@@ -577,10 +642,18 @@ with provider_tab:
             st.markdown(complaint_card(row), unsafe_allow_html=True)
 
 with battle_tab:
-    st.markdown("### Sales battlecard builder")
-    st.caption("Convert market evidence into discovery questions. Signal helps a rep prepare; it does not invent product claims.")
+    st.markdown("### Walk into the call with a point of view")
+    st.caption(
+        "Gemini converts the selected market evidence into a concise, human call plan. "
+        "Every claim is constrained to the aggregate data in view."
+    )
 
     battle_provider = st.selectbox("Competitor", sorted(filtered.provider.unique()), key="battle_provider")
+    call_objective = st.text_input(
+        "What should this call accomplish?",
+        value="Understand the cost of payroll friction and earn a workflow comparison.",
+        help="Gemini uses this goal to shape the questions and next step.",
+    )
     battle_summary = summary[summary.provider == battle_provider].sort_values("switching_pressure", ascending=False)
     battle_reviews = filtered[filtered.provider == battle_provider].sort_values(["severity", "review_date"], ascending=False)
 
@@ -590,46 +663,91 @@ with battle_tab:
         battle_top = battle_summary.iloc[0]
         battle_second = battle_summary.iloc[1] if len(battle_summary) > 1 else None
         top_themes = [battle_top.theme] + ([battle_second.theme] if battle_second is not None else [])
-
-        c1, c2 = st.columns([1.1, 1])
-        with c1:
-            st.markdown('<div class="battle-title">What the signal says</div>', unsafe_allow_html=True)
-            st.markdown(
-                f"**{battle_provider}** shows its strongest current pressure around **{battle_top.theme}** "
-                f"({battle_top.switching_pressure:.1f}/100)."
-            )
-            if battle_second is not None:
-                st.markdown(
-                    f"A secondary theme is **{battle_second.theme}** ({battle_second.switching_pressure:.1f}/100)."
-                )
-            st.info(
-                "Position this as a discovery hypothesis, not a universal claim: ask whether the prospect experiences the same friction before you compare solutions."
-            )
-
-        with c2:
-            st.markdown('<div class="battle-title">Call objective</div>', unsafe_allow_html=True)
-            st.markdown(
-                "1. Confirm whether the public-review pain exists for this prospect.\n"
-                "2. Quantify the operational impact.\n"
-                "3. Demonstrate only PayFwds capabilities that have been validated by the team."
-            )
-
-        st.markdown("#### Questions to ask")
         questions: list[str] = []
         for theme in top_themes:
             for q in DISCOVERY_QUESTIONS.get(theme, DISCOVERY_QUESTIONS["Other"]):
                 if q not in questions:
                     questions.append(q)
-        for i, q in enumerate(questions[:5], start=1):
-            st.markdown(f"**{i}.** {q}")
+        evidence_payload = build_evidence_payload(battle_reviews, battle_summary)
+        active_brief = fallback_brief(
+            battle_provider,
+            call_objective,
+            evidence_payload,
+            questions,
+        )
+        brief_source = "Grounded preview · connect Gemini for live generation"
 
-        st.markdown("#### Evidence to cite")
-        for row in battle_reviews.head(3).itertuples(index=False):
-            st.markdown(complaint_card(row), unsafe_allow_html=True)
+        generate_label = "Generate live brief with Gemini" if gemini_api_key else "Preview grounded call brief"
+        if st.button(generate_label, type="primary", use_container_width=True):
+            if gemini_api_key:
+                try:
+                    with st.spinner("Gemini is turning evidence into a call plan…"):
+                        active_brief = generate_gemini_brief(
+                            battle_provider,
+                            call_objective,
+                            evidence_payload,
+                            gemini_api_key,
+                        )
+                    brief_source = f"Generated live with {MODEL_NAME}"
+                    st.session_state["gemini_brief"] = {
+                        "provider": battle_provider,
+                        "objective": call_objective,
+                        "brief": active_brief,
+                    }
+                except Exception as exc:
+                    st.warning(f"Gemini could not generate this brief, so the grounded preview is shown. {exc}")
+            else:
+                st.info("Preview mode is active. Add GEMINI_API_KEY in the sidebar to generate with Gemini.")
 
-        battle_md = battlecard_markdown(battle_provider, filtered, summary)
+        cached_brief = st.session_state.get("gemini_brief")
+        if (
+            cached_brief
+            and cached_brief["provider"] == battle_provider
+            and cached_brief["objective"] == call_objective
+        ):
+            active_brief = cached_brief["brief"]
+            brief_source = f"Generated live with {MODEL_NAME}"
+
+        st.markdown(
+            f"""
+            <div class="brief-hero">
+              <div class="brief-kicker">{escape(brief_source.upper())}</div>
+              <div class="brief-headline">{escape(active_brief.headline)}</div>
+              <div class="brief-copy">{escape(active_brief.executive_summary)}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        q_col, proof_col = st.columns([1.15, 0.85])
+        with q_col:
+            st.markdown('<div class="eyebrow">Open with curiosity</div>', unsafe_allow_html=True)
+            st.markdown(f"#### “{active_brief.opening_question}”")
+            st.markdown('<div class="eyebrow">Then go one level deeper</div>', unsafe_allow_html=True)
+            for i, question in enumerate(active_brief.discovery_questions, start=1):
+                st.markdown(f"**{i:02d}** &nbsp; {question}")
+
+        with proof_col:
+            st.markdown('<div class="eyebrow">Evidence in the current view</div>', unsafe_allow_html=True)
+            proof_html = "".join(
+                f'<div class="proof-row"><span class="accent">↗</span>&nbsp; {escape(point)}</div>'
+                for point in active_brief.proof_points
+            )
+            st.markdown(f'<div class="section-card">{proof_html}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="eyebrow" style="margin-top:1rem">Do not overclaim</div>', unsafe_allow_html=True)
+            st.warning(active_brief.watch_out)
+            st.markdown('<div class="eyebrow">Recommended next move</div>', unsafe_allow_html=True)
+            st.success(active_brief.recommended_next_step)
+
+        with st.expander("View the evidence Gemini received"):
+            st.json(evidence_payload)
+            st.caption(
+                "Only aggregate metrics and de-identified excerpts are sent. Reviewer names and contact details are never included."
+            )
+
+        battle_md = battlecard_markdown(battle_provider, filtered, summary, active_brief)
         st.download_button(
-            "Download battlecard (.md)",
+            "Export rep-ready battlecard",
             data=battle_md,
             file_name=f"{battle_provider.lower().replace(' ', '_')}_battlecard.md",
             mime="text/markdown",
@@ -637,18 +755,18 @@ with battle_tab:
         )
 
 with methodology_tab:
-    st.markdown("### How Signal works")
+    st.markdown("### Trust every signal you take into a call")
     st.markdown(
-        "Signal intentionally keeps the analytical pipeline simple and explainable for a hackathon build. "
-        "A future team can replace each stage independently without redesigning the product."
+        "Signal separates measurement from generation. The scoring layer stays deterministic and auditable; "
+        "Gemini receives only the filtered evidence and turns it into questions—not unsupported claims."
     )
 
     s1, s2, s3, s4 = st.columns(4)
     method_cards = [
         ("01 · Collect", "Ingest only public-review sources whose terms allow automated access, or a permitted API/published dataset."),
-        ("02 · Classify", "Map each negative review to a failure category such as implementation, tax filing, support, billing, reporting, or integrations."),
-        ("03 · Score", "Combine complaint volume, severity, and recency into a 0–100 Switching Pressure score."),
-        ("04 · Activate", "Aggregate by provider and customer segment, then turn the strongest patterns into sales-ready discovery prompts."),
+        ("02 · Measure", "Classify complaints, then combine volume, severity, and recency into an explainable 0–100 pressure score."),
+        ("03 · Ground", "Package only aggregate metrics and de-identified excerpts from the selected view—never reviewer identities."),
+        ("04 · Activate", f"Use {MODEL_NAME} structured output to create a call brief that remains bounded by the supplied evidence."),
     ]
     for col, (title, copy) in zip([s1, s2, s3, s4], method_cards):
         with col:
@@ -686,6 +804,6 @@ with methodology_tab:
     )
 
 st.markdown(
-    "<div class='footer-note'>PayFwds Signal · Hackathon product prototype · Synthetic demo data in this starter build · Public-review intelligence should always follow source terms and privacy ground rules.</div>",
+    f"<div class='footer-note'>PayFwds Signal · The proof before the pitch · AI call briefs powered by {MODEL_NAME} · Synthetic data is clearly labeled · Public-review intelligence must follow source terms and privacy ground rules.</div>",
     unsafe_allow_html=True,
 )
