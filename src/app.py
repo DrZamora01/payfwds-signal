@@ -8,6 +8,7 @@ from textwrap import dedent
 
 import altair as alt
 import pandas as pd
+import pydeck as pdk
 import streamlit as st
 
 from gemini_intelligence import (
@@ -17,6 +18,7 @@ from gemini_intelligence import (
     generate_gemini_brief,
 )
 from pipeline import Review, classify_many, recency_weight, safe_quote, switching_pressure_score
+from regional_signals import regional_hotspots
 
 DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "sample_reviews.csv"
 
@@ -534,6 +536,71 @@ with overview_tab:
             .properties(height=max(250, filtered.provider.nunique() * 46))
         )
         st.altair_chart(heat_chart, use_container_width=True)
+
+    st.markdown("### Where payroll pain is concentrated")
+    st.caption(
+        "The same pressure formula is rolled up geographically. Bubble size represents pressure; hover to reveal each region's dominant failure theme."
+    )
+    regional = regional_hotspots(filtered)
+    map_col, region_col = st.columns([1.45, 0.75])
+    with map_col:
+        region_layer = pdk.Layer(
+            "ScatterplotLayer",
+            data=regional,
+            get_position="[longitude, latitude]",
+            get_radius="radius",
+            get_fill_color="color",
+            get_line_color=[246, 247, 251, 160],
+            line_width_min_pixels=1,
+            stroked=True,
+            pickable=True,
+            opacity=0.72,
+        )
+        region_deck = pdk.Deck(
+            map_style="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+            initial_view_state=pdk.ViewState(
+                latitude=39.5,
+                longitude=-98.35,
+                zoom=2.75,
+                pitch=18,
+            ),
+            layers=[region_layer],
+            tooltip={
+                "html": (
+                    "<b>{region}</b><br/>Pressure: {pressure}/100<br/>"
+                    "Leading theme: {dominant_theme}<br/>{complaints} complaints · {providers} providers"
+                ),
+                "style": {"backgroundColor": "#121620", "color": "#F6F7FB"},
+            },
+        )
+        st.pydeck_chart(region_deck, use_container_width=True, height=390)
+
+    with region_col:
+        hotspot = regional.iloc[0]
+        st.markdown('<div class="eyebrow">Highest-pressure region</div>', unsafe_allow_html=True)
+        st.markdown(f"## {hotspot.region}")
+        st.markdown(
+            f"**{hotspot.dominant_theme}** is the dominant signal, with a regional pressure score of "
+            f"**{hotspot.pressure:.1f}/100** across **{int(hotspot.complaints)}** complaints."
+        )
+        st.caption(
+            "This is a directional view of the selected evidence—not a population-adjusted market estimate."
+        )
+        regional_table = regional[["region", "dominant_theme", "complaints", "pressure"]].copy()
+        regional_table.columns = ["Region", "Leading theme", "Complaints", "Pressure"]
+        st.dataframe(
+            regional_table,
+            hide_index=True,
+            use_container_width=True,
+            column_config={
+                "Pressure": st.column_config.ProgressColumn(
+                    "Pressure",
+                    min_value=0,
+                    max_value=100,
+                    format="%.1f",
+                )
+            },
+        )
 
     st.markdown("### Complaint movement")
     trend = (

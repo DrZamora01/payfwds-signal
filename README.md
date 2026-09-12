@@ -14,6 +14,7 @@ Instead of asking a salesperson to read hundreds of complaints, Signal answers f
 ## Why it earns the call
 
 - **Find the break:** rank providers and failure themes by complaint volume, severity, and recency.
+- **See where it happens:** map each region's switching pressure and dominant failure theme.
 - **Find the buyer:** isolate the company sizes and industries feeling the strongest operational pain.
 - **Bring the proof:** preserve source context with every representative excerpt.
 - **Ask, don't attack:** use Gemini 2.5 Flash to create warm discovery questions bounded by the selected evidence.
@@ -71,6 +72,7 @@ payfwds_signal_v2/
 ├── src/app.py                   # Streamlit product UI
 ├── src/gemini_intelligence.py   # Structured, evidence-bound Gemini call briefs
 ├── src/pipeline.py              # Classification + scoring logic
+├── src/regional_signals.py      # Geographic pressure aggregation
 ├── tests/                       # Pipeline and Gemini contract tests
 ├── requirements.txt
 ├── run_linux_mint.sh            # One-command Linux Mint launcher
