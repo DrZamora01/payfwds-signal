@@ -1,0 +1,73 @@
+provider,text,rating,review_date,source,company_size,industry,region
+ADP,"Custom reporting and exports are difficult to configure, so our payroll team still cleans up data manually.",3,2025-10-05,Synthetic demo dataset,11-50,Construction,Midwest
+ADP,"The migration and go-live process was confusing, with several setup details needing rework.",2,2025-11-15,Synthetic demo dataset,51-200,Healthcare,Northeast
+ADP,Support was frustrating during a time-sensitive payroll question because we had multiple handoffs.,2,2025-12-20,Synthetic demo dataset,201-500,Manufacturing,South
+ADP,A payroll tax filing issue stayed unresolved until escalation and resulted in a penalty notice.,1,2026-01-25,Synthetic demo dataset,11-50,Professional Services,West
+ADP,The reporting dashboard is useful but several analytics exports are confusing for occasional users.,3,2026-03-01,Synthetic demo dataset,51-200,Technology,Midwest
+ADP,Support was frustrating during a time-sensitive payroll question because we had multiple handoffs.,2,2026-04-05,Synthetic demo dataset,201-500,Education,Northeast
+ADP,"Implementation and onboarding took weeks longer than planned, and manager training did not match our setup.",2,2026-05-10,Synthetic demo dataset,11-50,Hospitality,South
+ADP,We had an incorrect tax filing and spent days working through the correction process.,1,2026-06-15,Synthetic demo dataset,51-200,Nonprofit,West
+ADP,"Reporting is limited for the way we need to compare locations, and exported data needs extra work.",3,2026-07-20,Synthetic demo dataset,201-500,Retail,Midwest
+ADP,Support response was slow and our ticket moved between agents before someone owned the issue.,2,2026-08-10,Synthetic demo dataset,11-50,Construction,Northeast
+ADP,We had an incorrect tax filing and spent days working through the correction process.,1,2026-08-26,Synthetic demo dataset,51-200,Healthcare,South
+ADP,Support was frustrating during a time-sensitive payroll question because we had multiple handoffs.,2,2026-09-05,Synthetic demo dataset,201-500,Manufacturing,West
+Gusto,The reporting dashboard is useful but several analytics exports are confusing for occasional users.,3,2025-10-05,Synthetic demo dataset,51-200,Education,South
+Gusto,"The renewal cost and add-on fees were confusing, and the billing breakdown was not clear to our operations team.",2,2025-11-15,Synthetic demo dataset,201-500,Hospitality,West
+Gusto,The payroll integration stopped syncing and the connector created incorrect entries that needed manual cleanup.,1,2025-12-20,Synthetic demo dataset,11-50,Nonprofit,Midwest
+Gusto,The reporting dashboard is useful but several analytics exports are confusing for occasional users.,3,2026-01-25,Synthetic demo dataset,51-200,Retail,Northeast
+Gusto,"The renewal cost and add-on fees were confusing, and the billing breakdown was not clear to our operations team.",2,2026-03-01,Synthetic demo dataset,201-500,Construction,South
+Gusto,"Implementation and onboarding took weeks longer than planned, and manager training did not match our setup.",2,2026-04-05,Synthetic demo dataset,11-50,Healthcare,West
+Gusto,Our API integration was difficult to troubleshoot after a connector update broke the sync.,2,2026-05-10,Synthetic demo dataset,51-200,Manufacturing,Midwest
+Gusto,"Reporting is limited for the way we need to compare locations, and exported data needs extra work.",3,2026-06-15,Synthetic demo dataset,201-500,Professional Services,Northeast
+Gusto,We were surprised by a billing fee at renewal and the invoice was difficult to reconcile with the contract.,2,2026-07-20,Synthetic demo dataset,11-50,Technology,South
+Gusto,Our API integration was difficult to troubleshoot after a connector update broke the sync.,2,2026-08-10,Synthetic demo dataset,51-200,Education,West
+Gusto,Support was frustrating during a time-sensitive payroll question because we had multiple handoffs.,2,2026-08-26,Synthetic demo dataset,201-500,Hospitality,Midwest
+Gusto,We were surprised by a billing fee at renewal and the invoice was difficult to reconcile with the contract.,2,2026-09-05,Synthetic demo dataset,11-50,Nonprofit,Northeast
+Paychex,Implementation required more internal effort than expected and training felt limited for our operations team.,2,2025-10-05,Synthetic demo dataset,201-500,Healthcare,Midwest
+Paychex,Support response was slow and our ticket moved between agents before someone owned the issue.,2,2025-11-15,Synthetic demo dataset,11-50,Manufacturing,Northeast
+Paychex,A duplicate charge required several billing tickets before the invoice was corrected.,1,2025-12-20,Synthetic demo dataset,51-200,Professional Services,South
+Paychex,Implementation required more internal effort than expected and training felt limited for our operations team.,2,2026-01-25,Synthetic demo dataset,201-500,Technology,West
+Paychex,"Custom reporting and exports are difficult to configure, so our payroll team still cleans up data manually.",3,2026-03-01,Synthetic demo dataset,11-50,Education,Midwest
+Paychex,Customer service callbacks took days and the payroll support issue remained unresolved longer than expected.,2,2026-04-05,Synthetic demo dataset,51-200,Hospitality,Northeast
+Paychex,"A W-2 and withholding correction took longer than expected, and support had to escalate the tax case.",2,2026-05-10,Synthetic demo dataset,201-500,Nonprofit,South
+Paychex,"Implementation and onboarding took weeks longer than planned, and manager training did not match our setup.",2,2026-06-15,Synthetic demo dataset,11-50,Retail,West
+Paychex,Customer service callbacks took days and the payroll support issue remained unresolved longer than expected.,2,2026-07-20,Synthetic demo dataset,51-200,Construction,Midwest
+Paychex,Implementation required more internal effort than expected and training felt limited for our operations team.,2,2026-08-10,Synthetic demo dataset,201-500,Healthcare,Northeast
+Paychex,Support response was slow and our ticket moved between agents before someone owned the issue.,2,2026-08-26,Synthetic demo dataset,11-50,Manufacturing,South
+Paychex,Customer service callbacks took days and the payroll support issue remained unresolved longer than expected.,2,2026-09-05,Synthetic demo dataset,51-200,Professional Services,West
+Paycor,"Custom reporting and exports are difficult to configure, so our payroll team still cleans up data manually.",3,2025-10-05,Synthetic demo dataset,11-50,Hospitality,South
+Paycor,Our API integration was difficult to troubleshoot after a connector update broke the sync.,2,2025-11-15,Synthetic demo dataset,51-200,Nonprofit,West
+Paycor,Support was frustrating during a time-sensitive payroll question because we had multiple handoffs.,2,2025-12-20,Synthetic demo dataset,201-500,Retail,Midwest
+Paycor,"Custom reporting and exports are difficult to configure, so our payroll team still cleans up data manually.",3,2026-01-25,Synthetic demo dataset,11-50,Construction,Northeast
+Paycor,"The migration and go-live process was confusing, with several setup details needing rework.",2,2026-03-01,Synthetic demo dataset,51-200,Healthcare,South
+Paycor,The time clock integration and payroll sync required manual reconciliation after data stopped flowing correctly.,2,2026-04-05,Synthetic demo dataset,201-500,Manufacturing,West
+Paycor,"Custom reporting and exports are difficult to configure, so our payroll team still cleans up data manually.",3,2026-05-10,Synthetic demo dataset,11-50,Professional Services,Midwest
+Paycor,Customer service callbacks took days and the payroll support issue remained unresolved longer than expected.,2,2026-06-15,Synthetic demo dataset,51-200,Technology,Northeast
+Paycor,The time clock integration and payroll sync required manual reconciliation after data stopped flowing correctly.,2,2026-07-20,Synthetic demo dataset,201-500,Education,South
+Paycor,The payroll integration stopped syncing and the connector created incorrect entries that needed manual cleanup.,1,2026-08-10,Synthetic demo dataset,11-50,Hospitality,West
+Paycor,Customer service callbacks took days and the payroll support issue remained unresolved longer than expected.,2,2026-08-26,Synthetic demo dataset,51-200,Nonprofit,Midwest
+Paycor,The time clock integration and payroll sync required manual reconciliation after data stopped flowing correctly.,2,2026-09-05,Synthetic demo dataset,201-500,Retail,Northeast
+Paycom,The reporting dashboard is useful but several analytics exports are confusing for occasional users.,3,2025-10-05,Synthetic demo dataset,51-200,Manufacturing,Midwest
+Paycom,Implementation required more internal effort than expected and training felt limited for our operations team.,2,2025-11-15,Synthetic demo dataset,201-500,Professional Services,Northeast
+Paycom,We were surprised by a billing fee at renewal and the invoice was difficult to reconcile with the contract.,2,2025-12-20,Synthetic demo dataset,11-50,Technology,South
+Paycom,The reporting dashboard is useful but several analytics exports are confusing for occasional users.,3,2026-01-25,Synthetic demo dataset,51-200,Education,West
+Paycom,Implementation required more internal effort than expected and training felt limited for our operations team.,2,2026-03-01,Synthetic demo dataset,201-500,Hospitality,Midwest
+Paycom,We were surprised by a billing fee at renewal and the invoice was difficult to reconcile with the contract.,2,2026-04-05,Synthetic demo dataset,11-50,Nonprofit,Northeast
+Paycom,Customer service callbacks took days and the payroll support issue remained unresolved longer than expected.,2,2026-05-10,Synthetic demo dataset,51-200,Retail,South
+Paycom,"Reporting is limited for the way we need to compare locations, and exported data needs extra work.",3,2026-06-15,Synthetic demo dataset,201-500,Construction,West
+Paycom,"Implementation and onboarding took weeks longer than planned, and manager training did not match our setup.",2,2026-07-20,Synthetic demo dataset,11-50,Healthcare,Midwest
+Paycom,A duplicate charge required several billing tickets before the invoice was corrected.,1,2026-08-10,Synthetic demo dataset,51-200,Manufacturing,Northeast
+Paycom,Implementation required more internal effort than expected and training felt limited for our operations team.,2,2026-08-26,Synthetic demo dataset,201-500,Professional Services,South
+Paycom,Support response was slow and our ticket moved between agents before someone owned the issue.,2,2026-09-05,Synthetic demo dataset,11-50,Technology,West
+Paylocity,The time clock integration and payroll sync required manual reconciliation after data stopped flowing correctly.,2,2025-10-05,Synthetic demo dataset,201-500,Nonprofit,South
+Paylocity,A payroll tax filing issue stayed unresolved until escalation and resulted in a penalty notice.,1,2025-11-15,Synthetic demo dataset,11-50,Retail,West
+Paylocity,Customer service callbacks took days and the payroll support issue remained unresolved longer than expected.,2,2025-12-20,Synthetic demo dataset,51-200,Construction,Midwest
+Paylocity,"Reporting is limited for the way we need to compare locations, and exported data needs extra work.",3,2026-01-25,Synthetic demo dataset,201-500,Healthcare,Northeast
+Paylocity,The payroll integration stopped syncing and the connector created incorrect entries that needed manual cleanup.,1,2026-03-01,Synthetic demo dataset,11-50,Manufacturing,South
+Paylocity,Customer service callbacks took days and the payroll support issue remained unresolved longer than expected.,2,2026-04-05,Synthetic demo dataset,51-200,Professional Services,West
+Paylocity,"A W-2 and withholding correction took longer than expected, and support had to escalate the tax case.",2,2026-05-10,Synthetic demo dataset,201-500,Technology,Midwest
+Paylocity,The payroll integration stopped syncing and the connector created incorrect entries that needed manual cleanup.,1,2026-06-15,Synthetic demo dataset,11-50,Education,Northeast
+Paylocity,Customer service callbacks took days and the payroll support issue remained unresolved longer than expected.,2,2026-07-20,Synthetic demo dataset,51-200,Hospitality,South
+Paylocity,"A W-2 and withholding correction took longer than expected, and support had to escalate the tax case.",2,2026-08-10,Synthetic demo dataset,201-500,Nonprofit,West
+Paylocity,Support response was slow and our ticket moved between agents before someone owned the issue.,2,2026-08-26,Synthetic demo dataset,11-50,Retail,Midwest
+Paylocity,We had an incorrect tax filing and spent days working through the correction process.,1,2026-09-05,Synthetic demo dataset,51-200,Construction,Northeast
