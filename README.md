@@ -1,6 +1,6 @@
 # PayFwds Signal
 
-**PayFwds Signal** is a hackathon-ready competitive-intelligence dashboard that turns permitted public payroll/HCM review data into sales-ready insight.
+**PayFwds Signal** is an evidence-to-action platform for payroll sales teams. It turns permitted public payroll/HCM review data into a market pressure map, provider dossier, and grounded AI call brief.
 
 Instead of asking a salesperson to read hundreds of complaints, Signal answers four questions quickly:
 
@@ -11,19 +11,16 @@ Instead of asking a salesperson to read hundreds of complaints, Signal answers f
 
 > This starter build uses synthetic demo reviews. Before using the product for real competitive analysis, replace the sample CSV with a source whose terms explicitly allow automated access, an official API, or a permitted published dataset.
 
-## What is new in the polished V2
+## Why it earns the call
 
-- Branded executive landing/header experience
-- Executive signal cards for highest pressure, weakest provider signal, fastest-rising complaint, and most exposed segment
-- Provider pressure ranking and provider × failure-theme heatmap
-- Complaint movement trend chart
-- Provider Intelligence drill-down
-- Representative complaint cards with source context
-- Sales Battlecard Builder with discovery questions and Markdown export
-- Built-in methodology and ground-rules page
-- CSV export for the current filtered view
-- Linux Mint one-command launch helper
-- Small automated test suite for the analytical pipeline
+- **Find the break:** rank providers and failure themes by complaint volume, severity, and recency.
+- **See where it happens:** map each region's switching pressure and dominant failure theme.
+- **Find the buyer:** isolate the company sizes and industries feeling the strongest operational pain.
+- **Bring the proof:** preserve source context with every representative excerpt.
+- **Ask, don't attack:** use Gemini 2.5 Flash to create warm discovery questions bounded by the selected evidence.
+- **Leave with action:** export a rep-ready battlecard in under five minutes.
+
+Signal deliberately separates deterministic measurement from generative activation. Gemini never calculates the score and never receives reviewer identities.
 
 ## Run on Linux Mint
 
@@ -50,6 +47,15 @@ pip install -r requirements.txt
 streamlit run src/app.py
 ```
 
+For live AI call briefs, add a [Gemini API key](https://ai.google.dev/gemini-api/docs/api-key):
+
+```bash
+export GEMINI_API_KEY="your-key"
+streamlit run src/app.py
+```
+
+You can also enter a key in the in-app sidebar for a single demo session. Without a key, the complete product remains usable and shows a deterministic grounded brief preview.
+
 If Linux Mint says the `venv` module is missing:
 
 ```bash
@@ -64,8 +70,10 @@ payfwds_signal_v2/
 ├── data/sample_reviews.csv      # Synthetic demo input
 ├── docs/                        # Product + technical handoff
 ├── src/app.py                   # Streamlit product UI
+├── src/gemini_intelligence.py   # Structured, evidence-bound Gemini call briefs
 ├── src/pipeline.py              # Classification + scoring logic
-├── tests/test_pipeline.py       # Lightweight automated tests
+├── src/regional_signals.py      # Geographic pressure aggregation
+├── tests/                       # Pipeline and Gemini contract tests
 ├── requirements.txt
 ├── run_linux_mint.sh            # One-command Linux Mint launcher
 └── README.md
@@ -73,15 +81,16 @@ payfwds_signal_v2/
 
 ## Architecture in plain English
 
-**Input → classify → score → aggregate → activate**
+**Input → classify → score → aggregate → ground → activate**
 
 - **Input:** Each row is one review with provider, text, rating, date, source, company size, industry, and region.
 - **Classify:** `pipeline.py` looks for explainable keywords and assigns a failure category. It also estimates severity from language and star rating.
 - **Score:** The Switching Pressure score combines complaint volume, severity, and recency.
 - **Aggregate:** The app groups results by provider, theme, company size, industry, and time.
-- **Activate:** The dashboard turns those patterns into charts, representative evidence, and pre-call battlecards.
+- **Ground:** Signal packages only the current aggregate metrics and de-identified excerpts.
+- **Activate:** Gemini returns a schema-validated call plan: opening question, discovery path, proof points, guardrail, and next step.
 
-The classifier is intentionally replaceable. A future team can swap the keyword classifier for an LLM or embedding model while keeping the same UI and scoring workflow.
+The classifier remains intentionally explainable for the demo. The AI generation layer cannot silently alter source metrics, and its prompt explicitly prohibits invented PayFwds capabilities, ROI, or competitor facts.
 
 ## Switching Pressure score
 
@@ -108,8 +117,8 @@ This is a **prioritization score**, not a prediction of churn or market share.
 
 1. **Overview:** show the top switching-pressure signal and provider heatmap.
 2. **Provider Intel:** choose one competitor and show its strongest pain, exposed segment, and representative complaints.
-3. **Battlecards:** generate questions a salesperson can use to validate whether a prospect experiences the same pain, then download the battlecard.
-4. **Methodology:** show the explainable formula and source/privacy guardrails.
+3. **AI Call Brief:** select a call goal and show Gemini turning only the evidence in view into a human discovery plan.
+4. **Trust & Method:** reveal the exact evidence payload, explainable formula, structured output contract, and privacy guardrails.
 
 ## Production roadmap
 
